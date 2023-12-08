@@ -1,0 +1,27 @@
+name: Qodana
+run-name: ${{ fromJSON(inputs.payload).checkWorkflowRunName }}
+on:
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: For invocation by Qodana
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: ${{ fromJSON(inputs.payload).checkJobName }}
+    runs-on: ${{ fromJSON(inputs.payload).checkJobRunsOn }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}  # to check out the actual pull request commit, not the merge commit
+          fetch-depth: 0  # a full history is required for pull request analysis
+          repository: ${{ fromJSON(inputs.payload).repository }}
+      - name: 'Qodana Scan'
+        uses: JetBrains/qodana-action@main
+        env:
+          QODANA_TOKEN: ${{ fromJSON(inputs.payload).qodanaToken }}
